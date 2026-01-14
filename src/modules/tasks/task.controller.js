@@ -41,6 +41,7 @@ export const updateStatus = asyncHandler(async (req, res) => {
     workspaceId: req.body.workspaceId,
     status: req.body.status,
     position: req.body.position,
+    userId: req.user.userId,
   });
 
   res.status(200).json({ success: true, data: task });
@@ -50,6 +51,7 @@ export const remove = asyncHandler(async (req, res) => {
   await deleteTask({
     taskId: req.params.taskId,
     workspaceId: req.body.workspaceId,
+    userId: req.user.userId,
   });
 
   res.status(204).send();

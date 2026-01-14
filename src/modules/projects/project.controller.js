@@ -32,6 +32,7 @@ export const update = asyncHandler(async (req, res) => {
     projectId: req.params.projectId,
     workspaceId: req.body.workspaceId,
     data: req.body,
+    userId: req.user.userId,
   });
 
   res.status(200).json({ success: true, data: project });
@@ -41,6 +42,7 @@ export const remove = asyncHandler(async (req, res) => {
   await deleteProject({
     projectId: req.params.projectId,
     workspaceId: req.body.workspaceId,
+    userId: req.user.userId,
   });
 
   res.status(204).send();

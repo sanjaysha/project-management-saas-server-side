@@ -1,5 +1,6 @@
 import { Task } from "../../models/task.model.js";
 import { ApiError } from "../../utils/ApiError.js";
+import { logActivity } from "../../utils/activityLogger.js";
 
 export const createTask = async ({
   workspaceId,
@@ -10,7 +11,6 @@ export const createTask = async ({
   assigneeId,
   userId,
 }) => {
-  // Determine next position in TODO column
   const lastTask = await Task.findOne({
     projectId,
     status: "TODO",
@@ -19,7 +19,8 @@ export const createTask = async ({
 
   const nextPosition = lastTask ? lastTask.position + 1 : 1;
 
-  return Task.create({
+  // ✅ Step 1: create task
+  const task = await Task.create({
     workspaceId,
     projectId,
     title,
@@ -29,6 +30,21 @@ export const createTask = async ({
     createdBy: userId,
     position: nextPosition,
   });
+
+  // ✅ Step 2: log activity using task._id
+  await logActivity({
+    workspaceId,
+    userId,
+    entityType: "TASK",
+    entityId: task._id,
+    action: "CREATED",
+    metadata: {
+      title: task.title,
+      projectId,
+    },
+  });
+
+  return task;
 };
 
 export const getTasksByProject = async ({ workspaceId, projectId }) => {
@@ -58,6 +74,7 @@ export const updateTaskStatus = async ({
   workspaceId,
   status,
   position,
+  userId,
 }) => {
   const task = await Task.findOneAndUpdate(
     { _id: taskId, workspaceId, isDeleted: false },
@@ -69,10 +86,21 @@ export const updateTaskStatus = async ({
     throw new ApiError(404, "Task not found", "TASK_NOT_FOUND");
   }
 
+  await logActivity({
+    workspaceId,
+    userId,
+    entityType: "TASK",
+    entityId: task._id,
+    action: "STATUS_CHANGED",
+    metadata: {
+      status,
+    },
+  });
+
   return task;
 };
 
-export const deleteTask = async ({ taskId, workspaceId }) => {
+export const deleteTask = async ({ taskId, workspaceId, userId }) => {
   const task = await Task.findOneAndUpdate(
     { _id: taskId, workspaceId },
     { isDeleted: true },
@@ -82,4 +110,14 @@ export const deleteTask = async ({ taskId, workspaceId }) => {
   if (!task) {
     throw new ApiError(404, "Task not found", "TASK_NOT_FOUND");
   }
+
+  await logActivity({
+    workspaceId,
+    userId,
+    entityType: "TASK",
+    entityId: task._id,
+    action: "DELETED",
+  });
+
+  return task;
 };

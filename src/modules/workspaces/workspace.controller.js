@@ -23,6 +23,12 @@ export const list = asyncHandler(async (req, res) => {
 });
 
 export const invite = asyncHandler(async (req, res) => {
-  const member = await inviteMember(req.body);
+  const member = await inviteMember({
+    workspaceId: req.body.workspaceId,
+    email: req.body.email,
+    role: req.body.role,
+    inviterId: req.user.userId, // ✅ pass explicitly
+  });
+
   res.status(201).json({ success: true, data: member });
 });

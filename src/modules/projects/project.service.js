@@ -1,5 +1,6 @@
 import { Project } from "../../models/project.model.js";
 import { ApiError } from "../../utils/ApiError.js";
+import { logActivity } from "../../utils/activityLogger.js";
 
 export const createProject = async ({
   workspaceId,
@@ -7,12 +8,25 @@ export const createProject = async ({
   description,
   userId,
 }) => {
-  return Project.create({
+  // ✅ Step 1: create project
+  const project = await Project.create({
     workspaceId,
     name,
     description,
     createdBy: userId,
   });
+
+  // ✅ Step 2: log activity
+  await logActivity({
+    workspaceId,
+    userId,
+    entityType: "PROJECT",
+    entityId: project._id,
+    action: "CREATED",
+    metadata: { name },
+  });
+
+  return project;
 };
 
 export const getProjects = async ({ workspaceId, page = 1, limit = 10 }) => {
@@ -36,7 +50,12 @@ export const getProjects = async ({ workspaceId, page = 1, limit = 10 }) => {
   };
 };
 
-export const updateProject = async ({ projectId, workspaceId, data }) => {
+export const updateProject = async ({
+  projectId,
+  workspaceId,
+  data,
+  userId,
+}) => {
   const project = await Project.findOneAndUpdate(
     { _id: projectId, workspaceId, isDeleted: false },
     data,
@@ -47,10 +66,18 @@ export const updateProject = async ({ projectId, workspaceId, data }) => {
     throw new ApiError(404, "Project not found", "PROJECT_NOT_FOUND");
   }
 
+  await logActivity({
+    workspaceId,
+    userId,
+    entityType: "PROJECT",
+    entityId: project._id,
+    action: "UPDATED",
+  });
+
   return project;
 };
 
-export const deleteProject = async ({ projectId, workspaceId }) => {
+export const deleteProject = async ({ projectId, workspaceId, userId }) => {
   const project = await Project.findOneAndUpdate(
     { _id: projectId, workspaceId },
     { isDeleted: true },
@@ -60,4 +87,14 @@ export const deleteProject = async ({ projectId, workspaceId }) => {
   if (!project) {
     throw new ApiError(404, "Project not found", "PROJECT_NOT_FOUND");
   }
+
+  await logActivity({
+    workspaceId,
+    userId,
+    entityType: "PROJECT",
+    entityId: project._id,
+    action: "DELETED",
+  });
+
+  return project;
 };
