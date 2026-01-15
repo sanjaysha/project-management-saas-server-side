@@ -2,7 +2,6 @@ import { User } from "../../models/user.model.js";
 import { ApiError } from "../../utils/ApiError.js";
 import {
   generateAccessToken,
-  generateRefreshToken,
   generateRefreshTokenValue,
 } from "../../utils/token.js";
 import { RefreshToken } from "../../models/refreshToken.model.js";
@@ -24,26 +23,6 @@ export const registerUser = async ({ name, email, password }) => {
     email: user.email,
   };
 };
-
-// export const loginUser = async ({ email, password }) => {
-//   const user = await User.findOne({ email }).select("+passwordHash");
-//   if (!user || !(await user.comparePassword(password))) {
-//     throw new ApiError(401, "Invalid credentials", "INVALID_CREDENTIALS");
-//   }
-
-//   const accessToken = generateAccessToken({ userId: user._id });
-//   const refreshToken = generateRefreshToken({ userId: user._id });
-
-//   return {
-//     accessToken,
-//     refreshToken,
-//     user: {
-//       id: user._id,
-//       name: user.name,
-//       email: user.email,
-//     },
-//   };
-// };
 
 export const loginUser = async ({ email, password, ip }) => {
   const user = await User.findOne({ email }).select("+passwordHash");

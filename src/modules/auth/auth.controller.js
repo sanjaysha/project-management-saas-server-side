@@ -1,5 +1,10 @@
 import { asyncHandler } from "../../utils/asyncHandler.js";
-import { registerUser, loginUser } from "./auth.service.js";
+import {
+  registerUser,
+  loginUser,
+  refreshAccessToken,
+  logoutUser,
+} from "./auth.service.js";
 
 export const register = asyncHandler(async (req, res) => {
   const data = await registerUser(req.body);

@@ -8,12 +8,6 @@ export const generateAccessToken = (payload) => {
   });
 };
 
-export const generateRefreshToken = (payload) => {
-  return jwt.sign(payload, env.jwtRefreshSecret, {
-    expiresIn: "7d",
-  });
-};
-
 export const verifyAccessToken = (token) => {
   return jwt.verify(token, env.jwtAccessSecret);
 };
