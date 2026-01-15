@@ -4,7 +4,11 @@ import { ApiError } from "../utils/ApiError.js";
 export const authorize =
   (...allowedRoles) =>
   async (req, res, next) => {
-    const { workspaceId } = req.body || req.params || req.query;
+    const workspaceId =
+      req.body?.workspaceId ||
+      req.params?.workspaceId ||
+      req.query?.workspaceId;
+
     const userId = req.user.userId;
 
     if (!workspaceId) {
@@ -26,5 +30,6 @@ export const authorize =
     }
 
     req.workspaceMember = member;
+    req.workspaceId = workspaceId; // ✅ useful downstream
     next();
   };
