@@ -1,65 +1,44 @@
 import express from "express";
 import { authenticate } from "../../middlewares/auth.middleware.js";
 import { authorize } from "../../middlewares/authorize.middleware.js";
-import {
-  create,
-  list,
-  update,
-  updateStatus,
-  remove,
-} from "./task.controller.js";
+import { create, list, update, remove } from "./project.controller.js";
 import { validate } from "../../middlewares/validate.middleware.js";
 import {
-  createTaskSchema,
-  updateTaskStatusSchema,
-  updateTaskSchema,
-  listTasksSchema,
-  taskIdParamSchema,
-} from "../../validators/task.schema.js";
+  createProjectSchema,
+  updateProjectSchema,
+  listProjectsSchema,
+  deleteProjectSchema,
+} from "../../validators/project.schema.js";
 
 const router = express.Router();
 
 router.use(authenticate);
 
-// CREATE task
 router.post(
   "/",
   authorize("ADMIN", "MANAGER"),
-  validate(createTaskSchema),
+  validate(createProjectSchema),
   create
 );
 
-// LIST tasks (Kanban)
 router.get(
   "/",
   authorize("ADMIN", "MANAGER", "MEMBER"),
-  validate(listTasksSchema, "query"),
+  validate(listProjectsSchema, "query"),
   list
 );
 
-// UPDATE task (title, desc, etc.)
 router.put(
-  "/:taskId",
+  "/:projectId",
   authorize("ADMIN", "MANAGER"),
-  validate(taskIdParamSchema, "params"),
-  validate(updateTaskSchema),
+  validate(updateProjectSchema),
   update
 );
 
-// MOVE task (Kanban)
-router.patch(
-  "/:taskId/status",
-  authorize("ADMIN", "MANAGER", "MEMBER"),
-  validate(taskIdParamSchema, "params"),
-  validate(updateTaskStatusSchema),
-  updateStatus
-);
-
-// DELETE task
 router.delete(
-  "/:taskId",
-  authorize("ADMIN", "MANAGER"),
-  validate(taskIdParamSchema, "params"),
+  "/:projectId",
+  authorize("ADMIN"),
+  validate(deleteProjectSchema, "params"),
   remove
 );
 
